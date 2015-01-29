@@ -9,7 +9,10 @@ module Braspag
     end
 
     def call
+      Braspag.steps_logger.info('ResponseHandler#call.1')
       response = soap_adapter.call(@wsdl_url, @action, @params)
+      Braspag.steps_logger.info(response.inspect)
+      Braspag.steps_logger.info('ResponseHandler#call.2')
       response.success? ? success_callback.call(response) : failure_callback.call(response)
     end
 

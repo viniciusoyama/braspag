@@ -24,7 +24,7 @@ module Braspag
   }
 
   class << self
-    attr_accessor :merchant_id, :merchant_key, :logging, :production, :payment_data_request_xml_builder
+    attr_accessor :merchant_id, :merchant_key, :logging, :steps_logger, :production, :payment_data_request_xml_builder
 
     def credit_card_wsdl
       production? ? CREDIT_CARD_WSDL[:production] : CREDIT_CARD_WSDL[:homologation]
@@ -48,5 +48,6 @@ end
 Braspag.configure do |config|
   config.production = false
   config.logging    = false
+  config.steps_logger = Logger.new("/dev/null")
   config.payment_data_request_xml_builder = Braspag::PaymentDataRequestXML
 end

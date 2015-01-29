@@ -5,6 +5,7 @@ module Braspag
 
   class ResponseHandler
     def authorize_transaction(response)
+      Braspag.steps_logger.info('ResponseHandler#authorize_transaction')
       data = response.body[:authorize_transaction_response][:authorize_transaction_result]
 
       if data[:success]
@@ -23,6 +24,7 @@ module Braspag
     end
 
     def capture_transaction(response)
+      Braspag.steps_logger.info('ResponseHandler#capture_transaction')
       data = response.body[:capture_credit_card_transaction_response][:capture_credit_card_transaction_result]
 
       if data[:success]
@@ -40,6 +42,7 @@ module Braspag
     end
 
     def void_transaction(response)
+      Braspag.steps_logger.info('ResponseHandler#void_transaction')
       data = response.body[:void_credit_card_transaction_response][:void_credit_card_transaction_result]
 
       if data[:success]
@@ -67,12 +70,15 @@ module Braspag
     end
 
     def handle_error(response)
+      Braspag.steps_logger.info('ResponseHandler#handle_error')
       OpenStruct.new(:success? => false, :data => response)
     end
 
     private
 
     def respond_with_failure_transaction(data)
+      Braspag.steps_logger.info('ResponseHandler#respond_with_failure_transaction')
+
       error_report = data[:error_report_data_collection][:error_report_data_response]
       respond_with_failure({:return_code => error_report[:error_code], :return_message => error_report[:error_message]})
     end
@@ -91,6 +97,8 @@ module Braspag
     end
 
     def respond_with_failure(data)
+      Braspag.steps_logger.info('ResponseHandler#respond_with_failure')
+
       data_response = data.fetch(:error_report_data_collection){{}}[:error_report_data_response]
 
       OpenStruct.new(:success? => false,
