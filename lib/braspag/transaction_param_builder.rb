@@ -46,13 +46,15 @@ module Braspag
     def get_payment_status
       {
         "orderDataRequest" => {
+          "RequestId" => SecureRandom.uuid,
+          "Version" => 1,
           "MerchantId" => Braspag.merchant_id,
           "BraspagOrderId" => params["BraspagOrderId"]
         }
       }
     end
 
-    def get_order_id_data
+    def get_braspag_order_id
       {
         "orderIdDataRequest" => {
           "RequestId" => SecureRandom.uuid,

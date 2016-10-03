@@ -60,7 +60,7 @@ module Braspag
 
     def get_payment_status(params)
       Braspag.steps_logger.info('Calling Braspag#get_payment_status')
-      request = Request.new(Braspag.query_wsdl, :get_order_data, build_get_payment_status(params)) do |request|
+      request = Request.new(Braspag.query_wsdl, :get_order_data, build_get_payment_status_params(params)) do |request|
         request.on_success {|response| response_handler.get_payment_status(response)}
         request.on_failure {|response| response_handler.handle_error(response)}
       end
@@ -69,7 +69,7 @@ module Braspag
 
     def get_braspag_order_id(params)
       Braspag.steps_logger.info('Calling Braspag#get_braspag_order_id')
-      request = Request.new(Braspag.query_wsdl, :get_order_id_data, build_get_order_id_data_params(params)) do |request|
+      request = Request.new(Braspag.query_wsdl, :get_order_id_data, build_get_braspag_order_id_params(params)) do |request|
         request.on_success {|response| response_handler.get_braspag_order_id(response)}
         request.on_failure {|response| response_handler.handle_error(response)}
       end
@@ -86,12 +86,15 @@ module Braspag
       transaction_param_builder.new(params).capture
     end
 
-    def build_get_payment_status(params)
+    def build_get_payment_status_params(params)
+      if params["BraspagOrderId"].blank?
+        params["BraspagOrderId"] = self.get_braspag_order_id(params).data[:braspag_order_id]
+      end
       transaction_param_builder.new(params).get_payment_status
     end
 
-    def build_get_order_id_data_params(params)
-      transaction_param_builder.new(params).get_order_id_data
+    def build_get_braspag_order_id_params(params)
+      transaction_param_builder.new(params).get_braspag_order_id
     end
   end
 end
