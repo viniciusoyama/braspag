@@ -69,6 +69,25 @@ module Braspag
       credit_card_response_for(data)
     end
 
+    def get_payment_status(response)
+      response
+    end
+
+    def get_braspag_order_id(response)
+      byebug
+      data = response.body[:get_order_id_data_response][:get_order_id_data_result]
+      if data[:success]
+        transaction_response = data[:order_id_data_collection].try(:[], :order_id_transaction_response)
+        if transaction_response.present? && transaction_response.count > 0
+          respond_with_success(braspag_order_id: transaction_response.first[:braspag_order_id])
+        else
+          respond_with_failure(data.merge({error_message: "No transaction respose"}))
+        end
+      else
+        respond_with_failure(data)
+      end
+    end
+
     def handle_error(response)
       Braspag.steps_logger.info('ResponseHandler#handle_error')
       OpenStruct.new(:success? => false, :data => response)
