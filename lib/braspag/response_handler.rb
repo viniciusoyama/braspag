@@ -2,6 +2,16 @@ module Braspag
   CAPTURE_TRANSACTION_SUCCESS_STATUS = "0"
   VOID_TRANSACTION_SUCCESS_STATUS = "0"
   AUTHORIZE_TRANSACTION_SUCCESS_STATUS = ["0", "1"]
+  TRANSACTION_STATUS_CODE_DESCRIPTION = {
+    "0" => "undefined",
+    "1" => "captured",
+    "2" => "authorized",
+    "3" => "unauthorized",
+    "4" => "canceled",
+    "5" => "refunded",
+    "6" => "waiting",
+    "7" => "desqualified"
+  }
 
   class ResponseHandler
     def authorize_transaction(response)
@@ -67,6 +77,34 @@ module Braspag
     def save_credit_card(response)
       data = response.body[:save_credit_card_response][:save_credit_card_result]
       credit_card_response_for(data)
+    end
+
+    def get_payment_status(response)
+      data = response.body[:get_order_data_response][:get_order_data_result]
+      if data[:success]
+        transaction = data[:transaction_data_collection][:order_transaction_data_response]
+        if transaction.present?
+          respond_with_success(payment_status: TRANSACTION_STATUS_CODE_DESCRIPTION[transaction[:status]])
+        else
+          respond_with_failure(data.merge({error_message: "No transaction response"}))
+        end
+      else
+        respond_with_failure(data)
+      end
+    end
+
+    def get_braspag_order_id(response)
+      data = response.body[:get_order_id_data_response][:get_order_id_data_result]
+      if data[:success]
+        transaction_response = data[:order_id_data_collection].try(:[], :order_id_transaction_response)
+        if transaction_response.present? && transaction_response.count > 0
+          respond_with_success(braspag_order_id: transaction_response.first[:braspag_order_id])
+        else
+          respond_with_failure(data.merge({error_message: "No transaction response"}))
+        end
+      else
+        respond_with_failure(data)
+      end
     end
 
     def handle_error(response)
