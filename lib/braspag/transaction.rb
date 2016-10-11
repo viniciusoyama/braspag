@@ -64,6 +64,7 @@ module Braspag
       unless braspag_order_id_request.success?
         return response_handler.handle_error(braspag_order_id_request)
       end
+      params["BraspagOrderId"] = braspag_order_id_request.data[:braspag_order_id]
       request = Request.new(Braspag.query_wsdl, :get_order_data, build_get_payment_status_params(params)) do |request|
         request.on_success {|response| response_handler.get_payment_status(response)}
         request.on_failure {|response| response_handler.handle_error(response)}

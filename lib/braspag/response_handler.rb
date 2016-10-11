@@ -98,7 +98,11 @@ module Braspag
       if data[:success]
         transaction_response = data[:order_id_data_collection].try(:[], :order_id_transaction_response)
         if transaction_response.present? && transaction_response.count > 0
-          respond_with_success(braspag_order_id: transaction_response.first[:braspag_order_id])
+          if transaction_response.is_a?(Array)
+            respond_with_success(braspag_order_id: transaction_response.first[:braspag_order_id])
+          else
+            respond_with_success(braspag_order_id: transaction_response[:braspag_order_id])
+          end
         else
           respond_with_failure(data.merge({error_message: "No transaction response"}))
         end
